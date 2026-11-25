@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <View android:id="@+id/header" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+    <ScrollView android:id="@+id/scroll" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <TextView android:id="@+id/jobLine" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <TextView android:id="@+id/jobName" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <TextView android:id="@+id/jobCust" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <View android:id="@+id/jobBadge" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <View android:id="@+id/stepper" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <TextView android:id="@+id/reasonLabel" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <TextView android:id="@+id/reasonTitle" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <TextView android:id="@+id/reasonText" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <TextView android:id="@+id/reasonType" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <TextView android:id="@+id/reasonSerial" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <LinearLayout android:id="@+id/customerRows" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical"/>
+            <LinearLayout android:id="@+id/meterRows" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical"/>
+            <View android:id="@+id/map" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <TextView android:id="@+id/lat" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <TextView android:id="@+id/lng" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <Button android:id="@+id/openMaps" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <LinearLayout android:id="@+id/confirmCard" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+                <LinearLayout android:id="@+id/tips" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical"/>
+                <id.pamtirtakemuning.watermeter.ui.view.PhotoCapture android:id="@+id/capture" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+                <TextView android:id="@+id/confirmHint" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                <Button android:id="@+id/confirm" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            </LinearLayout>
+            <LinearLayout android:id="@+id/docCard" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+                <TextView android:id="@+id/docTime" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                <id.pamtirtakemuning.watermeter.ui.view.PhotoCapture android:id="@+id/docThumb" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+    <LinearLayout android:id="@+id/actionBar" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+        <TextView android:id="@+id/barHint" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+        <Button android:id="@+id/btnExecute" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+        <Button android:id="@+id/btnResult" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+    </LinearLayout>
+</LinearLayout>

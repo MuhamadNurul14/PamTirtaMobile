@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="navy">#123B68</color>
+    <color name="sky">#39A9E8</color>
+    <color name="ice">#EAF5FC</color>
+    <color name="mist">#F4F6F9</color>
+    <color name="success">#22A06B</color>
+    <color name="warn">#F59E0B</color>
+    <color name="muted">#9CA3AF</color>
+    <color name="white">#FFFFFF</color>
+    <color name="ic_launcher_background">#123B68</color>
+    <color name="danger">#DC2626</color>
+    <color name="muted_15">#269CA3AF</color>
+    <color name="gray_text">#4B5563</color>
+    <color name="warn_15">#26F59E0B</color>
+    <color name="warn_text">#B45309</color>
+    <color name="warn_bg">#FEF3C7</color>
+    <color name="success_12">#1F22A06B</color>
+    <color name="success_text">#047857</color>
+    <color name="navy_05">#0D123B68</color>
+    <color name="navy_10">#1A123B68</color>
+    <color name="navy_15">#26123B68</color>
+    <color name="navy_35">#59123B68</color>
+    <color name="navy_40">#66123B68</color>
+    <color name="navy_50">#80123B68</color>
+    <color name="navy_55">#8D123B68</color>
+    <color name="navy_60">#99123B68</color>
+    <color name="navy_75">#BF123B68</color>
+    <color name="sky_15">#2639A9E8</color>
+    <color name="sky_20">#3339A9E8</color>
+    <color name="white_15">#26FFFFFF</color>
+    <color name="danger_soft">#FCA5A5</color>
+    <color name="danger_bg">#FEF2F2</color>
+    <color name="danger_border">#F87171</color>
+</resources>

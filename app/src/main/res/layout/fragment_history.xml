@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <View android:id="@+id/header" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+    <ScrollView android:id="@+id/scroll" android:layout_width="match_parent" android:layout_height="match_parent">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <id.pamtirtakemuning.watermeter.ui.view.SearchBar android:id="@+id/search" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <id.pamtirtakemuning.watermeter.ui.view.Segmented android:id="@+id/segments" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+            <LinearLayout android:id="@+id/listBox" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical"/>
+            <TextView android:id="@+id/empty" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+        </LinearLayout>
+    </ScrollView>
+    <View android:id="@+id/actionBar" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+</LinearLayout>

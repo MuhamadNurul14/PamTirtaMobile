@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.PAMTirtaKemuning" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/navy</item>
+        <item name="colorPrimaryDark">@color/navy</item>
+        <item name="colorAccent">@color/sky</item>
+        <item name="colorControlActivated">@color/navy</item>
+        <item name="android:windowBackground">@color/mist</item>
+        <item name="android:fontFamily">@font/poppins</item>
+        <item name="android:textColorPrimary">@color/navy</item>
+        <item name="android:textColorHint">@color/navy_35</item>
+        <item name="android:textViewStyle">@style/Tx</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

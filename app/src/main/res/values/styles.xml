@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Teks dasar Poppins warna navy -->
+    <style name="Tx" parent="android:Widget.TextView">
+        <item name="android:textColor">@color/navy</item>
+        <item name="android:fontFamily">@font/poppins_regular</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+    <style name="Tx.Medium"><item name="android:fontFamily">@font/poppins_medium</item></style>
+    <style name="Tx.Semi"><item name="android:fontFamily">@font/poppins_semibold</item></style>
+    <style name="Tx.Bold"><item name="android:fontFamily">@font/poppins_bold</item></style>
+
+    <style name="Tx.Label">
+        <item name="android:fontFamily">@font/poppins_semibold</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:layout_marginBottom">6dp</item>
+    </style>
+    <style name="Tx.Caption">
+        <item name="android:textSize">10sp</item>
+        <item name="android:textColor">@color/navy_50</item>
+    </style>
+
+    <style name="Input" parent="android:Widget.EditText">
+        <item name="android:background">@drawable/bg_input</item>
+        <item name="android:fontFamily">@font/poppins_regular</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/navy</item>
+        <item name="android:textColorHint">@color/navy_35</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:paddingStart">14dp</item>
+        <item name="android:paddingEnd">14dp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textCursorDrawable">@drawable/cursor_sky</item>
+    </style>
+
+    <style name="Card">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:background">@drawable/bg_card</item>
+        <item name="android:padding">16dp</item>
+        <item name="android:elevation">3dp</item>
+        <item name="android:outlineAmbientShadowColor">@color/navy_15</item>
+        <item name="android:outlineSpotShadowColor">@color/navy_15</item>
+    </style>
+
+    <style name="Stack">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">vertical</item>
+    </style>
+
+    <!-- Dialog bagian bawah layar -->
+    <style name="Dialog.Bottom" parent="Theme.AppCompat.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowMinWidthMajor">100%</item>
+        <item name="android:windowMinWidthMinor">100%</item>
+        <item name="android:backgroundDimAmount">0.5</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+    <style name="Dialog.Full" parent="Theme.AppCompat.Dialog">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+</resources>
