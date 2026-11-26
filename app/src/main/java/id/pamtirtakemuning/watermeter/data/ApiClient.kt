@@ -6,8 +6,10 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 
+const val SERVER_ORIGIN = "https://pam-demo-api.vercel.app"
+
 object ApiClient {
-    private const val BASE_URL = "http://10.10.10.10/"
+    private const val BASE_URL = "$SERVER_ORIGIN/api/v1/"
 
     private val loggingInterceptor: HttpLoggingInterceptor by lazy {
         HttpLoggingInterceptor().apply {

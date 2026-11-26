@@ -96,7 +96,7 @@ fun PhotoCapture(title: String, desc: String, value: String?, onChange: (String?
         }
         if (value != null) {
             Box(Modifier.padding(top = 12.dp).fillMaxWidth().height(176.dp).clip(RoundedCornerShape(12.dp)).clickable { onPreview(value) }) {
-                AsyncImage(File(value), title, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                AsyncImage(Photos.resolveUrl(value), title, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
                 Box(Modifier.align(Alignment.TopEnd).padding(8.dp).size(32.dp).background(Color.White.copy(alpha = 0.9f), RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
                     Ic(R.drawable.ic_maximize, 14.dp)
                 }
@@ -125,7 +125,7 @@ fun PhotoThumb(label: String, src: String?, onOpen: (String) -> Unit) {
             Modifier.fillMaxWidth().height(128.dp).clip(RoundedCornerShape(16.dp)).background(Ice).clickable(enabled = src != null) { src?.let(onOpen) },
             contentAlignment = Alignment.Center,
         ) {
-            if (src != null) AsyncImage(File(src), label, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+            if (src != null) AsyncImage(Photos.resolveUrl(src), label, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
             else Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Ic(R.drawable.ic_image_plus, 22.dp, tint = navy(0.4f))
                 PText("Foto arsip", size = 10, color = navy(0.4f))
@@ -139,7 +139,7 @@ fun PhotoThumb(label: String, src: String?, onOpen: (String) -> Unit) {
 fun PhotoViewer(src: String, onClose: () -> Unit) {
     Dialog(onDismissRequest = onClose, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.92f)).clickable(onClick = onClose).padding(16.dp), contentAlignment = Alignment.Center) {
-            AsyncImage(File(src), "Pratinjau foto", Modifier.fillMaxSize(), contentScale = ContentScale.Fit)
+            AsyncImage(Photos.resolveUrl(src), "Pratinjau foto", Modifier.fillMaxSize(), contentScale = ContentScale.Fit)
             Box(Modifier.align(Alignment.TopEnd).size(40.dp).background(Color.White.copy(alpha = 0.15f), CircleShape), contentAlignment = Alignment.Center) {
                 Ic(R.drawable.ic_close, 20.dp, tint = Color.White)
             }

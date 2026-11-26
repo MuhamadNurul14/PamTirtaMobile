@@ -28,6 +28,7 @@ val GrayText = Color(0xFF6B7280)
 val WarnText = Color(0xFFB45309)
 val SuccessText = Color(0xFF177A50)
 val WarnBg = Color(0xFFFFF7E8)
+val DangerBg = Color(0xFFFEF2F2)
 
 /** Navy dengan transparansi, setara `text-navy/60`, `border-navy/5`, dst. */
 fun navy(alpha: Float) = Navy.copy(alpha = alpha)

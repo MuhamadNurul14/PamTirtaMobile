@@ -78,7 +78,7 @@ fun HistoryScreen(list: List<Assignment>, onDetail: (String) -> Unit) {
                     StatusBadge(Status.Selesai)
                 }
                 Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Ic(R.drawable.ic_map_pin, 14.dp, Modifier.padding(top = 2.dp), tint = navy(0.6f))
+                    Ic(R.drawable.ic_building, 14.dp, Modifier.padding(top = 2.dp), tint = navy(0.6f))
                     PText(a.address, size = 12, color = navy(0.6f), lineHeight = 1.5f)
                 }
                 Row(Modifier.padding(top = 12.dp).fillMaxWidth().background(Ice, RoundedCornerShape(12.dp)).padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {

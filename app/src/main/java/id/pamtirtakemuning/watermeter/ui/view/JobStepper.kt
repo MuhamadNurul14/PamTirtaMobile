@@ -34,7 +34,7 @@ class JobStepper @JvmOverloads constructor(ctx: Context, attrs: AttributeSet? = 
     }
 
     fun setStatus(s: Status) {
-        done = when (s) { Status.Belum -> 0; Status.Proses -> 1; Status.Selesai -> 3 }
+        done = when (s) { Status.Belum -> 0; Status.Proses -> 1; Status.Ditolak -> 1; Status.Validasi -> 2; Status.Selesai -> 4 }
         removeAllViews()
         val inflater = LayoutInflater.from(context)
         stages.forEachIndexed { i, (label, sub, icon) ->

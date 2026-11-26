@@ -14,8 +14,6 @@ private fun Context.open(uri: String, action: String = Intent.ACTION_VIEW) {
     }
 }
 
-fun Context.openMaps(a: Assignment) =
-    open("https://www.google.com/maps/search/?api=1&query=${a.lat},${a.lng}")
 
 fun Context.openWhatsApp(a: Assignment) = openWhatsApp(
     a.phone,

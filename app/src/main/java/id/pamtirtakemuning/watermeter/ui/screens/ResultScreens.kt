@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -68,7 +66,7 @@ import id.pamtirtakemuning.watermeter.util.fmtDateTime
 import id.pamtirtakemuning.watermeter.util.fmtDuration
 import java.io.File
 
-/** Layar sukses setelah Konfirmasi Penyelesaian. */
+/** Layar sukses setelah pengiriman laporan / perbaikan data. */
 @Composable
 fun SuccessScreen(a: Assignment, onResult: () -> Unit, onHome: () -> Unit) {
     val r = a.report
@@ -79,11 +77,11 @@ fun SuccessScreen(a: Assignment, onResult: () -> Unit, onHome: () -> Unit) {
                     Ic(R.drawable.ic_check_circle2, 44.dp, tint = Color.White)
                 }
             }
-            PText("Pengerjaan Selesai", Modifier.padding(top = 24.dp), size = 20, weight = FontWeight.Bold)
+            PText("Laporan Berhasil Dikirim", Modifier.padding(top = 24.dp), size = 20, weight = FontWeight.Bold)
             PText(
                 annotated {
-                    append("Data ${a.jobType.label.lowercase()} water meter berhasil dikirim dan status penugasan kini ")
-                    bold("Selesai")
+                    append("Data ${a.jobType.label.lowercase()} water meter berhasil dikirim ke Pusat dan status penugasan kini ")
+                    bold(a.status.label)
                     append(".")
                 },
                 Modifier.padding(top = 8.dp), size = 14, color = navy(0.6f), align = TextAlign.Center, lineHeight = 1.5f,
@@ -91,20 +89,20 @@ fun SuccessScreen(a: Assignment, onResult: () -> Unit, onHome: () -> Unit) {
             PCard(Modifier.padding(top = 24.dp), color = Mist, shadow = false, borderColor = null) {
                 InfoRow("Nomor Penugasan", a.assignNo)
                 InfoRow("Nama Pelanggan", a.name)
-                InfoRow("Waktu Selesai", r?.doneAt?.let { fmtDateTime(it) } ?: "-")
+                InfoRow("Waktu Kirim", r?.doneAt?.let { fmtDateTime(it) } ?: "-")
                 val start = a.confirmation?.at
                 if (start != null && r != null && r.doneAt > 0) InfoRow("Durasi Pengerjaan", fmtDuration(start, r.doneAt))
-                InfoRowC("Status") { StatusBadge(Status.Selesai, Modifier.padding(top = 2.dp)) }
+                InfoRowC("Status") { StatusBadge(a.status, Modifier.padding(top = 2.dp)) }
             }
         }
         Column(Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 32.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            PButton("Lihat Hasil Pengerjaan", onResult, Modifier.fillMaxWidth(), icon = R.drawable.ic_file_text)
+            PButton("Lihat Data Terkirim", onResult, Modifier.fillMaxWidth(), icon = R.drawable.ic_file_text)
             PButton("Kembali ke Daftar Tugas", onHome, Modifier.fillMaxWidth(), BtnVariant.Outline)
         }
     }
 }
 
-/** Tahap 3: Hasil Pengerjaan (hanya lihat / arsip). */
+/** Hasil Pengerjaan / Menunggu Validasi (arsip). */
 @Composable
 fun ResultScreen(a: Assignment, onBack: () -> Unit) {
     val r = a.report ?: return
@@ -112,10 +110,10 @@ fun ResultScreen(a: Assignment, onBack: () -> Unit) {
     var preview by rememberSaveable { mutableStateOf<String?>(null) }
     val times = listOf(
         Triple(R.drawable.ic_calendar, "Mulai", c?.let { fmtDateTime(it.at) } ?: "-"),
-        Triple(R.drawable.ic_check_circle2, "Selesai", if (r.doneAt > 0) fmtDateTime(r.doneAt) else "-"),
+        Triple(R.drawable.ic_check_circle2, "Kirim", if (r.doneAt > 0) fmtDateTime(r.doneAt) else "-"),
         Triple(R.drawable.ic_timer, "Durasi", if (c != null && r.doneAt > 0) fmtDuration(c.at, r.doneAt) else "-"),
     )
-    PageScaffold("HASIL PENGERJAAN", onBack) {
+    PageScaffold("HASIL PENGERJAAN & VALIDASI", onBack) {
         PCard {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(48.dp).background(Success.copy(alpha = 0.12f), RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) { Ic(R.drawable.ic_check_circle2, 24.dp, tint = Success) }
@@ -124,10 +122,10 @@ fun ResultScreen(a: Assignment, onBack: () -> Unit) {
                     PText(a.name, size = 16, weight = FontWeight.Bold, maxLines = 1)
                     PText("No. ${a.custNo}", size = 12, color = Sky)
                 }
-                StatusBadge(Status.Selesai)
+                StatusBadge(a.status)
             }
         }
-        JobStepper(Status.Selesai)
+        JobStepper(a.status)
 
         PCard {
             Row(Modifier.padding(bottom = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -157,7 +155,7 @@ fun ResultScreen(a: Assignment, onBack: () -> Unit) {
             InfoRow("Petugas / Cabang", "${a.officer} · ${a.branch}")
         }
         Section("Informasi Pelanggan", R.drawable.ic_user_round) {
-            InfoRow("Alamat", a.address, R.drawable.ic_map_pin)
+            InfoRow("Alamat", a.address, R.drawable.ic_building)
             InfoRow("Tarif / Golongan", a.tariff, R.drawable.ic_tag)
             InfoRow("Cabang", a.branch, R.drawable.ic_building)
         }
@@ -166,6 +164,12 @@ fun ResultScreen(a: Assignment, onBack: () -> Unit) {
             PText("Dokumentasi Awal · Water Meter Lama", size = 14, weight = FontWeight.Bold)
             PText("No. seri ${a.oldSerial}" + (c?.let { " · ${fmtDateTime(it.at)}" } ?: ""), Modifier.padding(bottom = 12.dp), size = 11, color = navy(0.5f), lineHeight = 1.4f)
             PhotoThumb("Foto Water Meter Lama", c?.oldPhoto) { preview = it }
+            if (c != null) {
+                Column(Modifier.padding(top = 12.dp).fillMaxWidth().background(Ice, RoundedCornerShape(12.dp)).padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    KvRow("Kondisi Fisik WM Lama", c.kondisiFisik.label)
+                    if (c.notes.isNotEmpty()) KvRow("Catatan Awal", c.notes)
+                }
+            }
         }
 
         Section("Data Water Meter Baru", R.drawable.ic_gauge) {
@@ -180,10 +184,8 @@ fun ResultScreen(a: Assignment, onBack: () -> Unit) {
             PhotoThumb("Hasil Pemasangan", r.newPhoto) { preview = it }
         }
 
-        Section("Hasil Pemeriksaan Kondisi", R.drawable.ic_clipboard_check) {
-            (Options.conditionKeys + Options.POSITION_KEY).forEach { k ->
-                KvRow(k.replace("Kondisi ", ""), r.conditions[k] ?: "-", color = if (r.conditions[k] == "Rusak") Danger else Color.Unspecified)
-            }
+        Section("Hasil Pemeriksaan Kondisi Water Meter Baru", R.drawable.ic_clipboard_check) {
+            KvRow("Kondisi Fisik", r.kondisiFisik.ifEmpty { "Normal" })
             InfoRow("Catatan Teknisi", r.notes.ifEmpty { "-" })
         }
 

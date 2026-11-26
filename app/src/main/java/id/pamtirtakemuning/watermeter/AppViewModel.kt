@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import id.pamtirtakemuning.watermeter.data.Assignment
 import id.pamtirtakemuning.watermeter.data.AssignmentStore
 import id.pamtirtakemuning.watermeter.data.Confirmation
+import id.pamtirtakemuning.watermeter.data.KondisiFisikWmLama
 import id.pamtirtakemuning.watermeter.data.Report
 import id.pamtirtakemuning.watermeter.data.Status
 import kotlinx.coroutines.launch
@@ -87,17 +88,35 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         store.save(list)
     }
 
-    /** Konfirmasi awal: simpan foto WM lama lalu status Belum -> Proses. */
-    fun confirm(id: String, oldPhoto: String) {
-        patch(id) { it.copy(status = Status.Proses, confirmation = Confirmation(oldPhoto, System.currentTimeMillis())) }
-        toast("Konfirmasi berhasil · Status berubah menjadi Proses")
+    /** Konfirmasi awal: simpan foto & kondisi fisik WM lama, status Belum -> Proses. */
+    fun confirm(id: String, oldPhoto: String, kondisiFisik: KondisiFisikWmLama, oldNotes: String) {
+        viewModelScope.launch {
+            val a = get(id)
+            val noSeri = a.oldSerial
+            val stand = "0"
+            val success = store.postDataWmLama(id, noSeri, stand, kondisiFisik, oldPhoto)
+            patch(id) { it.copy(status = Status.Proses, confirmation = Confirmation(oldPhoto, kondisiFisik, oldNotes, System.currentTimeMillis())) }
+            toast(if (success) "Konfirmasi WM lama berhasil & disinkronkan" else "Konfirmasi tersimpan lokal (Offline mode)")
+        }
     }
 
     fun saveDraft(id: String, d: Report) = patch(id) { it.copy(draft = d) }
 
-    /** Konfirmasi penyelesaian: status Proses -> Selesai. */
+    /** Kirim data WM baru / perbaikan: status Proses/Ditolak -> Validasi (Menunggu Validasi Pusat). */
     fun submit(id: String, r: Report) {
-        patch(id) { it.copy(status = Status.Selesai, report = r, draft = null) }
-        route = Route.Success(id)
+        viewModelScope.launch {
+            val a = get(id)
+            val oldStatus = a.status
+            val photoPath = r.newPhoto ?: ""
+            val success = if (oldStatus == Status.Ditolak) {
+                store.patchPerbaiki(id, r.newSerial, r.standNow.ifEmpty { "0" }, "2026-11-26T00:00:00.000Z", "fb80e21c-7c1d-49b8-b766-5461e5fd889e", photoPath)
+            } else {
+                store.postSelesaikan(id, r.newSerial, r.standNow.ifEmpty { "0" }, "2026-11-24T00:00:00.000Z", "fb80e21c-7c1d-49b8-b766-5461e5fd889e", photoPath)
+            }
+
+            patch(id) { it.copy(status = Status.Validasi, report = r, draft = null, rejectionReason = null) }
+            toast(if (success) (if (oldStatus == Status.Ditolak) "Perbaikan terkirim ke Pusat" else "Laporan terkirim ke Pusat (Menunggu Validasi)") else "Tersimpan lokal (Offline mode)")
+            route = Route.Success(id)
+        }
     }
 }

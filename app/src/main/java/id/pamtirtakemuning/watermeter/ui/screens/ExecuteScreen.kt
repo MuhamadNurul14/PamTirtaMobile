@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,8 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Checkbox
@@ -31,9 +30,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -48,7 +47,6 @@ import id.pamtirtakemuning.watermeter.ui.components.BtnVariant
 import id.pamtirtakemuning.watermeter.ui.components.Ic
 import id.pamtirtakemuning.watermeter.ui.components.IconChip
 import id.pamtirtakemuning.watermeter.ui.components.KvRow
-import id.pamtirtakemuning.watermeter.ui.components.KvRowC
 import id.pamtirtakemuning.watermeter.ui.components.Modal
 import id.pamtirtakemuning.watermeter.ui.components.PButton
 import id.pamtirtakemuning.watermeter.ui.components.PCard
@@ -59,7 +57,6 @@ import id.pamtirtakemuning.watermeter.ui.components.PageScaffold
 import id.pamtirtakemuning.watermeter.ui.components.PhotoCapture
 import id.pamtirtakemuning.watermeter.ui.components.PhotoThumb
 import id.pamtirtakemuning.watermeter.ui.components.PhotoViewer
-import id.pamtirtakemuning.watermeter.ui.components.RadioButtons
 import id.pamtirtakemuning.watermeter.ui.components.Section
 import id.pamtirtakemuning.watermeter.ui.components.SelectField
 import id.pamtirtakemuning.watermeter.ui.components.SignaturePad
@@ -67,6 +64,7 @@ import id.pamtirtakemuning.watermeter.ui.components.StatusBadge
 import id.pamtirtakemuning.watermeter.ui.components.annotated
 import id.pamtirtakemuning.watermeter.ui.components.bold
 import id.pamtirtakemuning.watermeter.ui.theme.Danger
+import id.pamtirtakemuning.watermeter.ui.theme.DangerBg
 import id.pamtirtakemuning.watermeter.ui.theme.Ice
 import id.pamtirtakemuning.watermeter.ui.theme.Mist
 import id.pamtirtakemuning.watermeter.ui.theme.Navy
@@ -80,7 +78,7 @@ import java.io.File
 
 private data class Check(val label: String, val ok: Boolean)
 
-/** Tahap 2: Eksekusi Pengerjaan (data WM baru, foto WM baru, tanda tangan) + ringkasan sebelum penyelesaian. */
+/** Eksekusi Pengerjaan / Input Data Perbaikan (saat status Ditolak). */
 @Composable
 fun ExecuteScreen(
     a: Assignment,
@@ -90,21 +88,22 @@ fun ExecuteScreen(
     onSubmit: (Report) -> Unit,
     toast: (String) -> Unit,
 ) {
-    var f by remember { mutableStateOf(a.draft ?: Report()) }
+    val isRejected = a.status == Status.Ditolak
+    var f by remember { mutableStateOf(a.draft ?: a.report ?: Report()) }
     var review by rememberSaveable { mutableStateOf(false) }
     var ok by rememberSaveable { mutableStateOf(false) }
     var preview by rememberSaveable { mutableStateOf<String?>(null) }
     var confirm by rememberSaveable { mutableStateOf(false) }
     var invalid by remember { mutableStateOf<List<String>?>(null) }
     var first by remember { mutableStateOf(true) }
+
     // simpan otomatis sebagai draft setiap ada perubahan form
     LaunchedEffect(f) { if (first) first = false else onDraft(f) }
 
-    val allKeys = Options.conditionKeys + Options.POSITION_KEY
     val standBad = f.standLast.isNotEmpty() && f.standNow.isNotEmpty() && (f.standNow.toLongOrNull() ?: 0) < (f.standLast.toLongOrNull() ?: 0)
     val checks = listOf(
         Check("Data water meter baru sudah diisi", listOf(f.brand, f.meterType, f.newSerial, f.standLast, f.standNow, f.digits, f.seal).all { it.isNotEmpty() } && !standBad),
-        Check("Pemeriksaan kondisi sudah dilakukan", allKeys.all { f.conditions[it]?.isNotEmpty() == true }),
+        Check("Pemeriksaan kondisi sudah dilakukan", f.kondisiFisik.isNotEmpty()),
         Check("Foto water meter baru sudah diunggah", f.newPhoto != null),
         Check("Tanda tangan teknisi sudah diberikan", f.signature != null),
     )
@@ -121,12 +120,15 @@ fun ExecuteScreen(
 
     if (review) {
         PageScaffold(
-            "RINGKASAN PENGERJAAN", { review = false },
+            if (isRejected) "RINGKASAN PERBAIKAN DATA" else "RINGKASAN PENGERJAAN", { review = false },
             bar = {
-                ActionBar(if (ok) "Status berubah dari Proses menjadi Selesai." else "Centang pernyataan untuk melanjutkan.") {
+                ActionBar(if (ok) (if (isRejected) "Status berubah dari Ditolak menjadi Menunggu Validasi." else "Status berubah dari Proses menjadi Menunggu Validasi.") else "Centang pernyataan untuk melanjutkan.") {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         PButton("Edit", { review = false }, variant = BtnVariant.Outline)
-                        PButton("Konfirmasi Penyelesaian", { confirm = true }, Modifier.weight(1f), BtnVariant.Success, icon = R.drawable.ic_check_circle2, enabled = ok)
+                        PButton(
+                            if (isRejected) "Kirim Perbaikan Data" else "Kirim ke Validasi Pusat",
+                            { confirm = true }, Modifier.weight(1f), if (isRejected) BtnVariant.Danger else BtnVariant.Success, icon = R.drawable.ic_check_circle2, enabled = ok,
+                        )
                     }
                 }
             },
@@ -135,9 +137,9 @@ fun ExecuteScreen(
                 IconChip(R.drawable.ic_clipboard_check, Color.White, Navy, size = 44.dp, iconSize = 22.dp, radius = 16.dp)
                 PText(
                     annotated {
-                        append("Periksa kembali seluruh data sebelum menekan ")
-                        bold("Konfirmasi Penyelesaian")
-                        append(". Data tidak dapat diubah setelah dikirim.")
+                        append("Periksa kembali seluruh data perbaikan sebelum menekan ")
+                        bold(if (isRejected) "Kirim Perbaikan Data" else "Kirim ke Validasi Pusat")
+                        append(". Data akan dikirim ulang untuk verifikasi.")
                     },
                     Modifier.weight(1f), size = 12, color = navy(0.7f), lineHeight = 1.6f,
                 )
@@ -163,8 +165,8 @@ fun ExecuteScreen(
                 KvRow("Jumlah Digit", f.digits)
                 KvRow("Nomor Segel", f.seal, mono = true)
             }
-            Section("Kondisi Water Meter", R.drawable.ic_clipboard_check) {
-                allKeys.forEach { k -> KvRow(k.replace("Kondisi ", ""), f.conditions[k] ?: "-", color = if (f.conditions[k] == "Rusak") Danger else Color.Unspecified) }
+            Section("Kondisi Water Meter Baru", R.drawable.ic_clipboard_check) {
+                KvRow("Kondisi Fisik", f.kondisiFisik.ifEmpty { "Normal" })
                 if (f.notes.isNotEmpty()) KvRow("Catatan", f.notes)
             }
             PCard {
@@ -179,33 +181,37 @@ fun ExecuteScreen(
                 verticalAlignment = Alignment.Top,
             ) {
                 Checkbox(ok, { ok = it }, colors = CheckboxDefaults.colors(checkedColor = Navy))
-                PText("Saya menyatakan data dan dokumentasi sudah benar dan pekerjaan water meter telah selesai dilakukan.", Modifier.padding(top = 12.dp), size = 12, weight = FontWeight.Medium, lineHeight = 1.6f)
+                PText(
+                    if (isRejected) "Saya menyatakan data perbaikan telah disesuaikan dan pekerjaan water meter telah diperbaiki dengan benar."
+                    else "Saya menyatakan data dan dokumentasi sudah benar dan pekerjaan water meter telah selesai dilakukan.",
+                    Modifier.padding(top = 12.dp), size = 12, weight = FontWeight.Medium, lineHeight = 1.6f,
+                )
             }
         }
         preview?.let { PhotoViewer(it) { preview = null } }
         if (confirm) Modal({ confirm = false }) {
-            PText("Selesaikan Penugasan?", size = 16, weight = FontWeight.Bold)
+            PText(if (isRejected) "Kirim Perbaikan Data?" else "Kirim ke Validasi Pusat?", size = 16, weight = FontWeight.Bold)
             PText(
                 annotated {
-                    append("Laporan akan dikirim dan status berubah menjadi ")
-                    bold("Selesai")
-                    append(". Data tidak dapat diubah setelah dikirim.")
+                    append("Laporan pengerjaan akan dikirim ke Pusat dan status penugasan berubah menjadi ")
+                    bold("Menunggu Validasi")
+                    append(".")
                 },
                 Modifier.padding(top = 6.dp), size = 14, color = navy(0.6f), lineHeight = 1.5f,
             )
             Row(Modifier.padding(top = 12.dp).fillMaxWidth().background(Mist, RoundedCornerShape(16.dp)).padding(10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                StatusBadge(Status.Proses); PText("→", color = navy(0.4f)); StatusBadge(Status.Selesai)
+                StatusBadge(if (isRejected) Status.Ditolak else Status.Proses); PText("→", color = navy(0.4f)); StatusBadge(Status.Validasi)
             }
             Row(Modifier.padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 PButton("Periksa Lagi", { confirm = false }, Modifier.weight(1f), BtnVariant.Outline)
-                PButton("Ya, Selesaikan", { confirm = false; onSubmit(f.copy(doneAt = System.currentTimeMillis())) }, Modifier.weight(1f), BtnVariant.Success)
+                PButton(if (isRejected) "Ya, Kirim Perbaikan" else "Ya, Kirim Laporan", { confirm = false; onSubmit(f.copy(doneAt = System.currentTimeMillis())) }, Modifier.weight(1f), if (isRejected) BtnVariant.Danger else BtnVariant.Success)
             }
         }
         return
     }
 
     PageScaffold(
-        "EKSEKUSI PENGERJAAN", onBack,
+        if (isRejected) "PERBAIKAN DATA PENGERJAAN" else "EKSEKUSI PENGERJAAN", onBack,
         bar = {
             ActionBar("Tinjau ringkasan sebelum konfirmasi penyelesaian.") {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -215,14 +221,35 @@ fun ExecuteScreen(
             }
         },
     ) {
+        if (isRejected) {
+            PCard(color = DangerBg, borderColor = Danger.copy(alpha = 0.35f), padding = PaddingValues(14.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        IconChip(R.drawable.ic_triangle_alert, Danger.copy(alpha = 0.15f), Danger, size = 44.dp, iconSize = 20.dp, radius = 16.dp)
+                        Column(Modifier.weight(1f)) {
+                            PText("PERBAIKAN DATA DITOLAK", size = 13, weight = FontWeight.Bold, color = Danger)
+                            PText("Perbarui data yang tidak sesuai. Bukti kondisi awal (foto WM lama) tetap tersimpan.", size = 11, color = navy(0.7f), lineHeight = 1.3f)
+                        }
+                        StatusBadge(Status.Ditolak)
+                    }
+                    if (!a.rejectionReason.isNullOrEmpty()) {
+                        Column(Modifier.fillMaxWidth().background(Color.White, RoundedCornerShape(12.dp)).padding(10.dp)) {
+                            PText("Catatan Verifikator:", size = 11, weight = FontWeight.Bold, color = Danger)
+                            PText(a.rejectionReason, Modifier.padding(top = 2.dp), size = 11, color = navy(0.8f), lineHeight = 1.4f)
+                        }
+                    }
+                }
+            }
+        }
+
         PCard(padding = PaddingValues(14.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                IconChip(R.drawable.ic_wrench, Warn.copy(alpha = 0.15f), WarnText, size = 44.dp, iconSize = 19.dp, radius = 16.dp)
+                IconChip(R.drawable.ic_wrench, if (isRejected) Danger.copy(alpha = 0.15f) else Warn.copy(alpha = 0.15f), if (isRejected) Danger else WarnText, size = 44.dp, iconSize = 19.dp, radius = 16.dp)
                 Column(Modifier.weight(1f)) {
                     PText(a.name, size = 14, weight = FontWeight.Bold, maxLines = 1)
                     PText("No. ${a.custNo} · ${a.jobType.label}", size = 11, color = navy(0.55f), lineHeight = 1.3f)
                 }
-                StatusBadge(Status.Proses)
+                StatusBadge(a.status)
             }
             Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.weight(1f).height(8.dp).clip(CircleShape).background(Mist)) { Box(Modifier.fillMaxHeight().fillMaxWidth(pct / 100f).background(Sky, CircleShape)) }
@@ -230,6 +257,7 @@ fun ExecuteScreen(
             }
             PText("Progres tersimpan otomatis sebagai draft.", Modifier.padding(top = 6.dp), size = 10, color = navy(0.5f), lineHeight = 1.3f)
         }
+
         PCard {
             Row(Modifier.padding(bottom = 12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                 IconChip(R.drawable.ic_check_circle, Success.copy(alpha = 0.12f), Success)
@@ -273,16 +301,15 @@ fun ExecuteScreen(
         }
 
         PCard {
-            PText("2. Pemeriksaan Kondisi Water Meter", Modifier.padding(bottom = 12.dp), size = 14, weight = FontWeight.Bold)
+            PText("2. Pemeriksaan Kondisi Water Meter Baru", Modifier.padding(bottom = 12.dp), size = 14, weight = FontWeight.Bold)
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                fun setCond(k: String, v: String) { f = f.copy(conditions = f.conditions + (k to v)) }
-                Options.conditionKeys.forEach { k ->
-                    Column { PText(k, Modifier.padding(bottom = 6.dp), size = 12, weight = FontWeight.SemiBold); RadioButtons(Options.conditionOpts, f.conditions[k]) { v -> setCond(k, v) } }
-                }
-                Column {
-                    PText(Options.POSITION_KEY, Modifier.padding(bottom = 6.dp), size = 12, weight = FontWeight.SemiBold)
-                    RadioButtons(Options.positionOpts, f.conditions[Options.POSITION_KEY]) { v -> setCond(Options.POSITION_KEY, v) }
-                }
+                SelectField(
+                    label = "Kondisi Fisik Water Meter Baru",
+                    value = f.kondisiFisik.ifEmpty { "Normal" },
+                    onChange = { f = f.copy(kondisiFisik = it) },
+                    options = listOf("Normal", "Baik", "Perlu Penyesuaian"),
+                    placeholder = "Pilih kondisi WM baru"
+                )
                 PTextArea(f.notes, { f = f.copy(notes = it) }, "Catatan Teknisi (opsional)", "Tuliskan jika ditemukan kondisi khusus")
             }
         }
@@ -295,7 +322,7 @@ fun ExecuteScreen(
 
         PCard {
             PText("4. Tanda Tangan Teknisi", Modifier.padding(bottom = 4.dp), size = 14, weight = FontWeight.Bold)
-            PText("Sebagai bukti bahwa pekerjaan telah dilaksanakan dan data sudah sesuai.", Modifier.padding(bottom = 12.dp), size = 11, color = navy(0.5f))
+            PText("As a token that the work is complete", Modifier.padding(bottom = 12.dp), size = 11, color = navy(0.5f))
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 SignaturePad(f.signature) { f = f.copy(signature = it) }
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {

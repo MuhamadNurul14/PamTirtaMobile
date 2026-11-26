@@ -124,6 +124,8 @@ object Modals {
 fun statusBg(ctx: Context, s: id.pamtirtakemuning.watermeter.data.Status): Triple<Int, Int, Int> = when (s) {
     id.pamtirtakemuning.watermeter.data.Status.Belum -> Triple(R.color.muted_15, R.color.gray_text, R.color.muted)
     id.pamtirtakemuning.watermeter.data.Status.Proses -> Triple(R.color.warn_15, R.color.warn_text, R.color.warn)
+    id.pamtirtakemuning.watermeter.data.Status.Validasi -> Triple(R.color.sky_15, R.color.sky, R.color.sky)
+    id.pamtirtakemuning.watermeter.data.Status.Ditolak -> Triple(R.color.danger_bg, R.color.danger, R.color.danger)
     id.pamtirtakemuning.watermeter.data.Status.Selesai -> Triple(R.color.success_12, R.color.success_text, R.color.success)
 }.let { (first, second, third) -> Triple(ctx.color(first), ctx.color(second), ctx.color(third)) }
 

@@ -41,24 +41,31 @@ import id.pamtirtakemuning.watermeter.ui.theme.navy
 private data class Stage(val label: String, val sub: String, val icon: Int)
 
 private val stages = listOf(
-    Stage("Konfirmasi", "Foto WM lama", R.drawable.ic_camera),
-    Stage("Eksekusi", "Pasang WM baru", R.drawable.ic_wrench),
+    Stage("Konfirmasi", "WM lama", R.drawable.ic_camera),
+    Stage("Eksekusi", "WM baru", R.drawable.ic_wrench),
+    Stage("Validasi", "Pusat", R.drawable.ic_shield_check),
     Stage("Selesai", "Hasil kerja", R.drawable.ic_badge_check),
 )
 
-/** Indikator tahapan kerja: Belum -> konfirmasi, Proses -> eksekusi, Selesai -> semua tuntas. */
+/** Indikator tahapan kerja: Belum -> konfirmasi, Proses/Ditolak -> eksekusi/perbaikan, Validasi -> validasi Pusat, Selesai -> tuntas. */
 @Composable
 fun JobStepper(status: Status) {
-    val done = when (status) { Status.Belum -> 0; Status.Proses -> 1; Status.Selesai -> 3 }
+    val done = when (status) {
+        Status.Belum -> 0
+        Status.Proses -> 1
+        Status.Ditolak -> 1
+        Status.Validasi -> 2
+        Status.Selesai -> 4
+    }
     val navyLine = navy(0.1f)
-    PCard(padding = PaddingValues(horizontal = 12.dp, vertical = 14.dp)) {
+    PCard(padding = PaddingValues(horizontal = 10.dp, vertical = 14.dp)) {
         Row(
             Modifier.fillMaxWidth().drawBehind {
-                val cell = size.width / 3f
-                for (i in 1..2) {
+                val cell = size.width / 4f
+                for (i in 1..3) {
                     drawLine(
                         if (i <= done) Success else navyLine,
-                        Offset(cell * (i - 0.5f) + 24.dp.toPx(), 18.dp.toPx()), Offset(cell * (i + 0.5f) - 24.dp.toPx(), 18.dp.toPx()), 2.dp.toPx(),
+                        Offset(cell * (i - 0.5f) + 18.dp.toPx(), 18.dp.toPx()), Offset(cell * (i + 0.5f) - 18.dp.toPx(), 18.dp.toPx()), 2.dp.toPx(),
                     )
                 }
             },
@@ -66,15 +73,19 @@ fun JobStepper(status: Status) {
             stages.forEachIndexed { i, s ->
                 val isDone = i < done
                 val isNow = i == done
+                val isRejectedStage = isNow && status == Status.Ditolak
+                val stageColor = if (isDone) Success else if (isRejectedStage) id.pamtirtakemuning.watermeter.ui.theme.Danger else if (isNow) Sky else Mist
+                val stageLabel = if (i == 1 && status == Status.Ditolak) "Perbaikan" else s.label
+                val stageSub = if (i == 1 && status == Status.Ditolak) "Perbarui data" else if (i == 2 && status == Status.Validasi) "Validasi Pusat" else s.sub
                 Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                     Box(
                         Modifier.size(36.dp)
-                            .drawBehind { if (isNow) drawCircle(Sky.copy(alpha = 0.2f), radius = 22.dp.toPx()) }
-                            .background(if (isDone) Success else if (isNow) Sky else Mist, CircleShape),
+                            .drawBehind { if (isNow) drawCircle((if (isRejectedStage) id.pamtirtakemuning.watermeter.ui.theme.Danger else Sky).copy(alpha = 0.2f), radius = 22.dp.toPx()) }
+                            .background(stageColor, CircleShape),
                         contentAlignment = Alignment.Center,
                     ) { Ic(if (isDone) R.drawable.ic_check else s.icon, 17.dp, tint = if (isDone || isNow) Color.White else navy(0.35f)) }
-                    PText(s.label, Modifier.padding(top = 6.dp), size = 11, weight = FontWeight.Bold, color = if (isDone) Success else if (isNow) Navy else navy(0.4f), lineHeight = 1.3f)
-                    PText(s.sub, size = 10, color = navy(0.45f), lineHeight = 1.3f, align = TextAlign.Center)
+                    PText(stageLabel, Modifier.padding(top = 6.dp), size = 11, weight = FontWeight.Bold, color = if (isDone) Success else if (isRejectedStage) id.pamtirtakemuning.watermeter.ui.theme.Danger else if (isNow) Navy else navy(0.4f), lineHeight = 1.3f)
+                    PText(stageSub, size = 10, color = navy(0.45f), lineHeight = 1.3f, align = TextAlign.Center)
                 }
             }
         }

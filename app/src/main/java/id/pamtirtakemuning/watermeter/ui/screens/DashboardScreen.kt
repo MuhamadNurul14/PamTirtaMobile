@@ -51,6 +51,7 @@ import id.pamtirtakemuning.watermeter.ui.components.PhotoHero
 import id.pamtirtakemuning.watermeter.ui.components.SearchBar
 import id.pamtirtakemuning.watermeter.ui.components.Segmented
 import id.pamtirtakemuning.watermeter.ui.components.StatusBadge
+import id.pamtirtakemuning.watermeter.ui.theme.Danger
 import id.pamtirtakemuning.watermeter.ui.theme.GrayText
 import id.pamtirtakemuning.watermeter.ui.theme.Ice
 import id.pamtirtakemuning.watermeter.ui.theme.Muted
@@ -60,7 +61,6 @@ import id.pamtirtakemuning.watermeter.ui.theme.WarnText
 import id.pamtirtakemuning.watermeter.ui.theme.navy
 import id.pamtirtakemuning.watermeter.util.greeting
 import id.pamtirtakemuning.watermeter.util.isToday
-import id.pamtirtakemuning.watermeter.util.openMaps
 import id.pamtirtakemuning.watermeter.util.openWhatsApp
 
 @Composable
@@ -84,7 +84,7 @@ private fun AssignmentCard(a: Assignment, onDetail: () -> Unit) {
             StatusBadge(a.status)
         }
         Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Ic(R.drawable.ic_map_pin, 14.dp, Modifier.padding(top = 2.dp), tint = navy(0.6f))
+            Ic(R.drawable.ic_building, 14.dp, Modifier.padding(top = 2.dp), tint = navy(0.6f))
             PText(a.address, size = 12, color = navy(0.6f), lineHeight = 1.6f)
         }
         Column(Modifier.padding(top = 12.dp).fillMaxWidth().background(Ice, RoundedCornerShape(12.dp)).padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -92,10 +92,9 @@ private fun AssignmentCard(a: Assignment, onDetail: () -> Unit) {
             Row { LabeledValue("Alasan", a.damage, Modifier.weight(1f), WarnText); LabeledValue("No. Water Meter", a.oldSerial, Modifier.weight(1f), mono = true) }
         }
         Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            PButton("Lokasi", { ctx.openMaps(a) }, Modifier.weight(1f), BtnVariant.Outline, small = true, icon = R.drawable.ic_navigation)
-            PButton("WhatsApp", { ctx.openWhatsApp(a) }, Modifier.weight(1f), BtnVariant.Outline, small = true, icon = R.drawable.ic_message_circle)
+            PButton("Hubungi WhatsApp", { ctx.openWhatsApp(a) }, Modifier.weight(1f), BtnVariant.Outline, small = true, icon = R.drawable.ic_message_circle)
+            PButton("Lihat Detail", onDetail, Modifier.weight(1f), small = true, icon = R.drawable.ic_chevron_right)
         }
-        PButton("Lihat Detail", onDetail, Modifier.padding(top = 8.dp).fillMaxWidth(), icon = R.drawable.ic_chevron_right)
     }
 }
 
@@ -106,8 +105,15 @@ fun DashboardScreen(list: List<Assignment>, user: User, onDetail: (String) -> Un
     var bell by remember { mutableStateOf(false) }
     fun count(s: Status) = list.count { it.status == s }
     val fresh = list.filter { it.status == Status.Belum && isToday(it.assignedAt) }
-    val counts = mapOf("Semua" to list.size, "Belum" to count(Status.Belum), "Proses" to count(Status.Proses), "Selesai" to count(Status.Selesai))
-    val shown = list.filter { (tab == "Semua" || it.status.label == tab) && (it.name + it.custNo).contains(q, ignoreCase = true) }
+    val counts = mapOf(
+        "Semua" to list.size,
+        "Belum" to count(Status.Belum),
+        "Proses" to count(Status.Proses),
+        "Validasi" to count(Status.Validasi),
+        "Ditolak" to count(Status.Ditolak),
+        "Selesai" to count(Status.Selesai),
+    )
+    val shown = list.filter { (tab == "Semua" || it.status.label == tab || (tab == "Validasi" && it.status == Status.Validasi)) && (it.name + it.custNo).contains(q, ignoreCase = true) }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         PhotoHero(shape = RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp)) {
@@ -132,27 +138,28 @@ fun DashboardScreen(list: List<Assignment>, user: User, onDetail: (String) -> Un
                 PText("PENUGASAN PERGANTIAN WATER METER", Modifier.padding(top = 20.dp), size = 11, weight = FontWeight.SemiBold, color = Color(0xFF8FD3F7), letterSpacing = 1.5f)
             }
         }
-        Row(Modifier.offset(y = (-32).dp).padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(Modifier.offset(y = (-32).dp).padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             data class Stat(val label: String, val sub: String, val v: Int, val icon: Int, val bg: Color, val fg: Color)
             listOf(
-                Stat("Belum", "Menunggu konfirmasi", count(Status.Belum), R.drawable.ic_clipboard_check, Muted.copy(alpha = 0.15f), GrayText),
-                Stat("Proses", "Sedang dikerjakan", count(Status.Proses), R.drawable.ic_clock, Warn.copy(alpha = 0.15f), WarnText),
-                Stat("Selesai", "Pekerjaan tuntas", count(Status.Selesai), R.drawable.ic_check_circle2, Success.copy(alpha = 0.12f), Success),
+                Stat("Belum", "Menunggu", count(Status.Belum), R.drawable.ic_clipboard_check, Muted.copy(alpha = 0.15f), GrayText),
+                Stat("Proses", "Dikerjakan", count(Status.Proses), R.drawable.ic_clock, Warn.copy(alpha = 0.15f), WarnText),
+                Stat("Ditolak", "Perbaikan", count(Status.Ditolak), R.drawable.ic_triangle_alert, Danger.copy(alpha = 0.12f), Danger),
+                Stat("Selesai", "Tuntas", count(Status.Selesai), R.drawable.ic_check_circle2, Success.copy(alpha = 0.12f), Success),
             ).forEach { s ->
-                PCard(Modifier.weight(1f), padding = PaddingValues(12.dp)) {
+                PCard(Modifier.weight(1f), padding = PaddingValues(8.dp)) {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Box(Modifier.size(32.dp).background(s.bg, RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) { Ic(s.icon, 16.dp, tint = s.fg) }
-                        PText("${s.v}", size = 24, weight = FontWeight.Bold, lineHeight = 1f)
+                        Box(Modifier.size(28.dp).background(s.bg, RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) { Ic(s.icon, 14.dp, tint = s.fg) }
+                        PText("${s.v}", size = 20, weight = FontWeight.Bold, lineHeight = 1f)
                     }
-                    PText(s.label, Modifier.padding(top = 8.dp), size = 12, weight = FontWeight.Bold)
-                    PText(s.sub, size = 10, weight = FontWeight.Medium, color = navy(0.5f), lineHeight = 1.2f)
+                    PText(s.label, Modifier.padding(top = 6.dp), size = 11, weight = FontWeight.Bold)
+                    PText(s.sub, size = 9, weight = FontWeight.Medium, color = navy(0.5f), lineHeight = 1.2f, maxLines = 1)
                 }
             }
         }
         Column(Modifier.offset(y = (-16).dp).padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             PText("Daftar Penugasan", size = 16, weight = FontWeight.Bold)
             SearchBar(q, { q = it })
-            Segmented(listOf("Semua", "Belum", "Proses", "Selesai"), tab, { tab = it }, counts)
+            Segmented(listOf("Semua", "Belum", "Proses", "Validasi", "Ditolak", "Selesai"), tab, { tab = it }, counts)
             if (shown.isEmpty()) PCard { PText("Tidak ada penugasan ditemukan.", Modifier.fillMaxWidth().padding(vertical = 24.dp), size = 14, color = navy(0.5f), align = TextAlign.Center) }
             else shown.forEach { AssignmentCard(it) { onDetail(it.id) } }
         }

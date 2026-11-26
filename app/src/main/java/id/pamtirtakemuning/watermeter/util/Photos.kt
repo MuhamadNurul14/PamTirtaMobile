@@ -53,4 +53,13 @@ object Photos {
     private fun save(b: Bitmap, f: File) = FileOutputStream(f).use { b.compress(Bitmap.CompressFormat.JPEG, 80, it) }
 
     fun savePng(c: Context, b: Bitmap): String = newFile(c, "png").also { f -> FileOutputStream(f).use { b.compress(Bitmap.CompressFormat.PNG, 100, it) } }.path
+
+    fun resolveUrl(path: String?): Any? {
+        if (path.isNullOrEmpty()) return null
+        if (path.startsWith("http://") || path.startsWith("https://")) return path
+        val file = File(path)
+        if (file.exists()) return file
+        if (path.startsWith("/")) return "https://pam-demo-api.vercel.app$path"
+        return "https://pam-demo-api.vercel.app/$path"
+    }
 }

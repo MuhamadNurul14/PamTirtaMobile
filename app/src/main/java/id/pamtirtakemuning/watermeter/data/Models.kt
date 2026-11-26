@@ -5,12 +5,27 @@ import com.google.gson.annotations.SerializedName
 enum class Status(val label: String) {
     @SerializedName("Belum") Belum("Belum"),
     @SerializedName("Proses") Proses("Proses"),
+    @SerializedName("Validasi") Validasi("Menunggu Validasi"),
+    @SerializedName("Ditolak") Ditolak("Ditolak"),
     @SerializedName("Selesai") Selesai("Selesai")
 }
 
 enum class JobType(val label: String) {
     @SerializedName("Penggantian") Penggantian("Penggantian"),
     @SerializedName("Perbaikan") Perbaikan("Perbaikan")
+}
+
+enum class KondisiFisikWmLama(val apiValue: String, val label: String) {
+    @SerializedName("normal") Normal("normal", "Normal"),
+    @SerializedName("macet") Macet("macet", "Macet"),
+    @SerializedName("kaca_pecah") KacaPecah("kaca_pecah", "Kaca Pecah"),
+    @SerializedName("berembun_parah") BerembunParah("berembun_parah", "Berembun Parah"),
+    @SerializedName("bodi_korosi") BodiKorosi("bodi_korosi", "Bodi Korosi");
+
+    companion object {
+        fun fromApi(value: String?): KondisiFisikWmLama =
+            entries.find { it.apiValue.equals(value, ignoreCase = true) } ?: Normal
+    }
 }
 
 object Options {
@@ -22,9 +37,11 @@ object Options {
     val meterTypes = listOf("Multi Jet", "Single Jet", "Volumetrik", "Ultrasonik")
 }
 
-/** Tahap 1 - bukti kondisi awal sebelum pengerjaan. [oldPhoto] berisi path file foto WM lama. */
+/** Tahap 1 - bukti & pemeriksaan kondisi WM lama sebelum pengerjaan. */
 data class Confirmation(
     @SerializedName("oldPhoto") val oldPhoto: String? = null,
+    @SerializedName("kondisiFisik") val kondisiFisik: KondisiFisikWmLama = KondisiFisikWmLama.Normal,
+    @SerializedName("notes") val notes: String = "",
     @SerializedName("at") val at: Long
 )
 
@@ -40,7 +57,7 @@ data class Report(
     @SerializedName("standNow") val standNow: String = "",
     @SerializedName("digits") val digits: String = "",
     @SerializedName("seal") val seal: String = "",
-    @SerializedName("conditions") val conditions: Map<String, String> = emptyMap(),
+    @SerializedName("kondisiFisik") val kondisiFisik: String = "Normal",
     @SerializedName("notes") val notes: String = "",
     @SerializedName("newPhoto") val newPhoto: String? = null,
     @SerializedName("signature") val signature: String? = null,
@@ -69,6 +86,7 @@ data class Assignment(
     @SerializedName("confirmation") val confirmation: Confirmation? = null,
     @SerializedName("report") val report: Report? = null,
     @SerializedName("draft") val draft: Report? = null,
+    @SerializedName("rejectionReason") val rejectionReason: String? = null,
 )
 
 data class User(

@@ -33,6 +33,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import id.pamtirtakemuning.watermeter.ui.theme.Danger
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.runtime.CompositionLocalProvider
@@ -224,6 +225,8 @@ fun StatusBadge(status: Status, modifier: Modifier = Modifier) {
     val (bg, fg, dot) = when (status) {
         Status.Belum -> Triple(Muted.copy(alpha = 0.15f), GrayText, Muted)
         Status.Proses -> Triple(Warn.copy(alpha = 0.15f), WarnText, Warn)
+        Status.Validasi -> Triple(Sky.copy(alpha = 0.15f), Sky, Sky)
+        Status.Ditolak -> Triple(Danger.copy(alpha = 0.12f), Danger, Danger)
         Status.Selesai -> Triple(Success.copy(alpha = 0.12f), SuccessText, Success)
     }
     Row(
@@ -405,34 +408,7 @@ fun Logo(size: Dp = 64.dp, light: Boolean = false) {
     ) { Ic(R.drawable.ic_droplets, size * 0.5f, tint = if (light) Navy else Color.White) }
 }
 
-/** Pratinjau peta sederhana (digambar manual) dengan pin lokasi pelanggan. */
-@Composable
-fun MapPreview(name: String) {
-    Box(Modifier.fillMaxWidth().height(144.dp).clip(RoundedCornerShape(16.dp)).background(Color(0xFFE8F1F8))) {
-        Canvas(Modifier.fillMaxSize()) {
-            val s = maxOf(size.width / 320f, size.height / 144f)
-            translate((size.width - 320f * s) / 2f, (size.height - 144f * s) / 2f) {
-                scale(s, s, Offset.Zero) {
-                    drawRoundRect(Color(0xFFCFE8D6), Offset(190f, 70f), Size(110f, 60f), CornerRadius(10f))
-                    val river = Path().apply { moveTo(0f, 100f); cubicTo(80f, 80f, 140f, 130f, 320f, 40f) }
-                    drawPath(river, Color(0xFF9FD0F2), style = Stroke(14f))
-                    val road = Stroke(9f, cap = StrokeCap.Round)
-                    listOf(Offset(-10f, 40f) to Offset(330f, 40f), Offset(90f, -10f) to Offset(90f, 160f),
-                        Offset(230f, -10f) to Offset(230f, 160f), Offset(0f, 130f) to Offset(120f, 0f))
-                        .forEach { (a, b) -> drawLine(Color.White, a, b, road.width, StrokeCap.Round) }
-                    drawLine(Color(0xFFD3E1EE), Offset(0f, 70f), Offset(320f, 70f), 1.5f)
-                    drawLine(Color(0xFFD3E1EE), Offset(160f, 0f), Offset(160f, 144f), 1.5f)
-                }
-            }
-        }
-        Box(Modifier.align(Alignment.Center).offset(y = (-18).dp).size(36.dp).shadow(6.dp, RoundedCornerShape(18.dp, 18.dp, 18.dp, 0.dp))
-            .rotate(-45f).background(Navy, RoundedCornerShape(18.dp, 18.dp, 18.dp, 0.dp)), contentAlignment = Alignment.Center) {
-            Ic(R.drawable.ic_droplets, 16.dp, Modifier.rotate(45f), tint = Color.White)
-        }
-        PText(name, Modifier.align(Alignment.BottomStart).padding(8.dp).background(Color.White.copy(alpha = 0.9f), RoundedCornerShape(8.dp)).padding(horizontal = 8.dp, vertical = 4.dp),
-            size = 10, weight = FontWeight.SemiBold, lineHeight = 1.2f)
-    }
-}
+
 
 /* ---------- Dialog ---------- */
 

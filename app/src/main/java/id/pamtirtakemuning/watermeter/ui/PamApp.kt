@@ -71,12 +71,12 @@ fun PamApp(vm: AppViewModel) {
                 val toDetail = { vm.go(Route.Detail(a.id)) }
                 // halaman tahap hanya bisa dibuka sesuai status; selain itu kembali ke detail
                 val allowed = route is Route.Detail ||
-                    (route is Route.Execute && a.status == Status.Proses) ||
-                    (route is Route.Result && a.status == Status.Selesai && a.report != null)
+                    (route is Route.Execute && (a.status == Status.Proses || a.status == Status.Ditolak)) ||
+                    (route is Route.Result && (a.status == Status.Validasi || a.status == Status.Selesai) && a.report != null)
                 if (!allowed || route is Route.Detail) {
                     DetailScreen(
                         a, onBack = { vm.main() },
-                        onConfirm = { vm.confirm(a.id, it) },
+                        onConfirm = { photo, conds, notes -> vm.confirm(a.id, photo, conds, notes) },
                         onExecute = { vm.go(Route.Execute(a.id)) },
                         onResult = { vm.go(Route.Result(a.id, From.Detail)) },
                     )
